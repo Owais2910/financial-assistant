@@ -21,7 +21,9 @@ A web application that analyzes bank statements and generates AI-powered spendin
 
 1. Clone the repository git clone https://github.com/Owais2910/financial-assistant.git
 2. Install dependencies
+   pip install pandas matplotlib anthropic streamlit
 3. Run the app
+   streamlit run app.py
 4. Enter your Anthropic API key in the sidebar and upload a CSV bank statement
 
 ## CSV Format
