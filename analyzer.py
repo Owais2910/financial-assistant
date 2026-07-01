@@ -4,7 +4,7 @@ import anthropic
 import os
 
 # Load API key from environment
-client = anthropic.Anthropic(api_key="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")
+client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 # Load the bank statement
 df = pd.read_csv("transactions.csv")
 
