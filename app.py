@@ -9,12 +9,12 @@ st.title("💰 AI-Powered Personal Finance Assistant")
 st.write("Upload your bank statement and get AI-powered spending insights.")
 
 # API key input
-api_key = st.sidebar.text_input("Enter your Anthropic API Key", type="password")
+api_key = st.secrets["ANTHROPIC_API_KEY"]
 
 # File upload
 uploaded_file = st.file_uploader("Upload your bank statement (CSV)", type=["csv"])
 
-if uploaded_file and api_key:
+if uploaded_file:
     df = pd.read_csv(uploaded_file)
     expenses = df[df["Amount"] < 0].copy()
     expenses["Amount"] = expenses["Amount"].abs()
