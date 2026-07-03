@@ -16,6 +16,15 @@ uploaded_file = st.file_uploader("Upload your bank statement (CSV)", type=["csv"
 
 if uploaded_file:
     df = pd.read_csv(uploaded_file)
+    df["Date"] = pd.to_datetime(df["Date"])
+    
+    # Month filter
+    months = ["All Months"] + sorted(df["Date"].dt.strftime("%B %Y").unique().tolist())
+    selected_month = st.selectbox("Select Month", months)
+    
+    if selected_month != "All Months":
+        df = df[df["Date"].dt.strftime("%B %Y") == selected_month]
+    
     expenses = df[df["Amount"] < 0].copy()
     expenses["Amount"] = expenses["Amount"].abs()
     category_totals = expenses.groupby("Category")["Amount"].sum().sort_values(ascending=False)
@@ -41,13 +50,15 @@ if uploaded_file:
             summary = "\n".join([f"{cat}: RM {amt:.2f}" for cat, amt in category_totals.items()])
             total = expenses["Amount"].sum()
             income_total = df[df["Amount"] > 0]["Amount"].sum()
+            period = selected_month if selected_month != "All Months" else "3 months"
 
             prompt = f"""You are a personal finance assistant. Analyze this spending data and give 3-4 specific, actionable insights. Be friendly and specific with RM amounts.
 
-Monthly Income: RM {income_total/3:.2f}
-Monthly Spending: RM {total/3:.2f}
+Period: {period}
+Total Income: RM {income_total:.2f}
+Total Spending: RM {total:.2f}
 
-Spending by category (3 months total):
+Spending by category:
 {summary}"""
 
             client = anthropic.Anthropic(api_key=api_key)
@@ -58,5 +69,3 @@ Spending by category (3 months total):
             )
             st.subheader("🤖 AI Financial Insights")
             st.write(message.content[0].text)
-else:
-    st.info("Please enter your API key in the sidebar and upload a CSV file to get started.")
