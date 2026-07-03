@@ -16,7 +16,7 @@ uploaded_file = st.file_uploader("Upload your bank statement (CSV)", type=["csv"
 
 if uploaded_file:
     df = pd.read_csv(uploaded_file)
-    df["Date"] = pd.to_datetime(df["Date"])
+    df["Date"] = pd.to_datetime(df["Date"], dayfirst=True)
     
     # Month filter
     months = ["All Months"] + sorted(df["Date"].dt.strftime("%B %Y").unique().tolist())
