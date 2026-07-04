@@ -1,38 +1,78 @@
 # 💰 AI-Powered Personal Finance Assistant
 
-A web application that analyzes bank statements and generates AI-powered spending insights using Claude AI.
+![Python](https://img.shields.io/badge/Python-3.14-blue?logo=python)
+![Streamlit](https://img.shields.io/badge/Streamlit-Deployed-red?logo=streamlit)
+![Claude AI](https://img.shields.io/badge/Claude_AI-Anthropic-orange)
+![GitHub](https://img.shields.io/badge/Status-Active-brightgreen)
 
-## What It Does
+A deployed web application that analyzes bank statements and generates AI-powered spending insights using Claude AI (Anthropic).
 
-- Upload a bank statement (CSV format)
-- Automatically categorizes transactions by spending type
-- Generates interactive charts showing spending breakdown
-- Uses Claude AI to provide personalized, actionable financial insights in Malaysian Ringgit (RM)
+🔗 **Live App:** [owais-finance-assistant.streamlit.app](https://owais-finance-assistant.streamlit.app)
 
-## Tech Stack
+---
 
-- **Python** — core programming language
-- **Pandas** — data processing and analysis
-- **Matplotlib** — data visualization and charts
-- **Claude AI (Anthropic)** — AI-powered financial insights
-- **Streamlit** — interactive web interface
+## 🚀 Features
 
-## How to Run
+- 📂 **CSV Upload** — Upload any bank statement in CSV format
+- 📅 **Monthly Filter** — Analyze spending by specific month or all months
+- 📊 **Interactive Charts** — Bar and pie charts powered by Plotly
+- 💡 **AI Insights** — Personalized financial recommendations via Claude AI
+- 📈 **KPI Dashboard** — Total spent, income, savings, and savings rate
+- ⚠️ **Spending Alerts** — Highlights biggest expenses and overspending
+- 📥 **Export Report** — Download AI insights as a text file
 
-1. Clone the repository git clone https://github.com/Owais2910/financial-assistant.git
-2. Install dependencies
-   pip install pandas matplotlib anthropic streamlit
-3. Run the app
-   streamlit run app.py
-4. Enter your Anthropic API key in the sidebar and upload a CSV bank statement
+---
 
-## CSV Format
+## 🛠️ Tech Stack
+
+| Tool | Purpose |
+|------|---------|
+| Python | Core programming language |
+| Pandas | Data processing and analysis |
+| Plotly | Interactive data visualizations |
+| Claude AI (Anthropic) | AI-powered financial insights |
+| Streamlit | Web interface and deployment |
+| Git & GitHub | Version control |
+
+---
+
+## 📁 CSV Format
 
 Your bank statement should have these columns:
+
 | Date | Description | Category | Amount |
 |------|-------------|----------|--------|
-| 2026-04-01 | Grab Food | Food | -25.00 |
+| 1/7/2026 | Grab Food | Food | -25.00 |
+| 1/7/2026 | Monthly Salary | Income | 4500.00 |
 
-## Built By
+- Expenses should be **negative** amounts
+- Income should be **positive** amounts
 
-Owais Saad Siddiqui — Business Management (Business Analytics) student exploring FinTech and AI applications in finance.
+---
+
+## ⚙️ How to Run Locally
+
+```bash
+# Clone the repository
+git clone https://github.com/Owais2910/financial-assistant.git
+cd financial-assistant
+
+# Install dependencies
+pip install pandas plotly anthropic streamlit
+
+# Add your API key to .streamlit/secrets.toml
+# ANTHROPIC_API_KEY = "your-key-here"
+
+# Run the app
+streamlit run app.py
+```
+
+---
+
+## 👤 Built By
+
+**Owais Saad Siddiqui**
+Business Management (Business Analytics) | Asia Pacific University
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue?logo=linkedin)](https://linkedin.com/in/owais-saad-siddiqui)
+[![GitHub](https://img.shields.io/badge/GitHub-Follow-black?logo=github)](https://github.com/Owais2910)
