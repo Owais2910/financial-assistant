@@ -15,12 +15,13 @@ st.write("Upload your bank statement and get AI-powered spending insights.")
 # Sidebar instructions
 with st.sidebar:
     st.header("📖 How to Use")
-    st.write("1. Upload your bank statement as a CSV or PDF file")
-    st.write("2. Select a specific month or view all months")
-    st.write("3. Explore your spending charts")
-    st.write("4. Click **Generate AI Insights** for personalized recommendations")
-    st.write("5. Chat with the AI about your spending")
-    st.write("6. Download your insights as a text file")
+    st.write("1. Select your currency")
+    st.write("2. Upload your bank statement as a CSV or PDF file")
+    st.write("3. Select a specific month or view all months")
+    st.write("4. Explore your spending charts")
+    st.write("5. Click **Generate AI Insights** for personalized recommendations")
+    st.write("6. Chat with the AI about your spending")
+    st.write("7. Download your insights as a text file")
     st.markdown("---")
     st.markdown("Built by **Owais Saad Siddiqui**")
     st.markdown("[GitHub](https://github.com/Owais2910/financial-assistant)")
@@ -28,6 +29,22 @@ with st.sidebar:
 # Load API key
 api_key = st.secrets["ANTHROPIC_API_KEY"]
 client = anthropic.Anthropic(api_key=api_key)
+
+# Currency selector
+currency = st.selectbox("Select your currency", [
+    "RM (Malaysian Ringgit)",
+    "USD (US Dollar)",
+    "GBP (British Pound)",
+    "EUR (Euro)",
+    "SGD (Singapore Dollar)",
+    "AUD (Australian Dollar)",
+    "INR (Indian Rupee)",
+    "IDR (Indonesian Rupiah)",
+    "PHP (Philippine Peso)",
+    "THB (Thai Baht)",
+    "Other"
+])
+currency_symbol = currency.split(" ")[0]
 
 # File upload — CSV or PDF
 upload_type = st.radio("Select file type", ["CSV", "PDF"])
@@ -113,9 +130,9 @@ if df is not None:
 
     # KPI metrics
     col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Total Spent", f"RM {total_spent:,.2f}")
-    col2.metric("Total Income", f"RM {income_total:,.2f}")
-    col3.metric("Savings", f"RM {savings:,.2f}", delta=f"{savings_rate:.1f}% savings rate")
+    col1.metric("Total Spent", f"{currency_symbol} {total_spent:,.2f}")
+    col2.metric("Total Income", f"{currency_symbol} {income_total:,.2f}")
+    col3.metric("Savings", f"{currency_symbol} {savings:,.2f}", delta=f"{savings_rate:.1f}% savings rate")
     col4.metric("Top Category", category_totals.index[0] if len(category_totals) > 0 else "N/A")
 
     # Spending progress bar
@@ -123,7 +140,7 @@ if df is not None:
     spend_pct = min(total_spent / income_total, 1.0) if income_total > 0 else 0
     st.progress(spend_pct)
     if spend_pct >= 1.0:
-        st.error(f"⚠️ You have overspent by RM {abs(savings):,.2f} this period!")
+        st.error(f"⚠️ You have overspent by {currency_symbol} {abs(savings):,.2f} this period!")
     elif spend_pct >= 0.9:
         st.warning(f"⚠️ You've used {spend_pct*100:.1f}% of your income — close to your limit!")
     else:
@@ -133,7 +150,7 @@ if df is not None:
     if len(category_totals) > 0:
         top_cat = category_totals.index[0]
         top_amt = category_totals.iloc[0]
-        st.warning(f"⚠️ Biggest expense: **{top_cat}** — RM {top_amt:,.2f}")
+        st.warning(f"⚠️ Biggest expense: **{top_cat}** — {currency_symbol} {top_amt:,.2f}")
 
     # Plotly charts
     st.subheader("Spending Breakdown")
@@ -143,7 +160,7 @@ if df is not None:
         fig1 = px.bar(
             x=category_totals.index,
             y=category_totals.values,
-            labels={"x": "Category", "y": "Amount (RM)"},
+            labels={"x": "Category", "y": f"Amount ({currency_symbol})"},
             title="Spending by Category",
             color=category_totals.index,
             color_discrete_sequence=px.colors.qualitative.Set3
@@ -168,15 +185,15 @@ if df is not None:
     # AI Insights
     if st.button("🤖 Generate AI Insights"):
         with st.spinner("Analyzing your finances..."):
-            summary = "\n".join([f"{cat}: RM {amt:.2f}" for cat, amt in category_totals.items()])
+            summary = "\n".join([f"{cat}: {currency_symbol} {amt:.2f}" for cat, amt in category_totals.items()])
             period = selected_month if selected_month != "All Months" else "All Months"
 
-            prompt = f"""You are a personal finance assistant. Analyze this spending data and give 3-4 specific, actionable insights. Be friendly and specific with RM amounts.
+            prompt = f"""You are a personal finance assistant. Analyze this spending data and give 3-4 specific, actionable insights. Be friendly and specific with {currency_symbol} amounts.
 
 Period: {period}
-Total Income: RM {income_total:.2f}
-Total Spending: RM {total_spent:.2f}
-Savings: RM {savings:.2f} ({savings_rate:.1f}% savings rate)
+Total Income: {currency_symbol} {income_total:.2f}
+Total Spending: {currency_symbol} {total_spent:.2f}
+Savings: {currency_symbol} {savings:.2f} ({savings_rate:.1f}% savings rate)
 
 Spending by category:
 {summary}"""
@@ -192,12 +209,13 @@ Spending by category:
 
             export_text = f"""AI-Powered Personal Finance Assistant
 Period: {period}
+Currency: {currency}
 Generated by: owais-finance-assistant.streamlit.app
 
 SPENDING SUMMARY
-Total Income: RM {income_total:.2f}
-Total Spent: RM {total_spent:.2f}
-Savings: RM {savings:.2f} ({savings_rate:.1f}% savings rate)
+Total Income: {currency_symbol} {income_total:.2f}
+Total Spent: {currency_symbol} {total_spent:.2f}
+Savings: {currency_symbol} {savings:.2f} ({savings_rate:.1f}% savings rate)
 
 SPENDING BY CATEGORY
 {summary}
@@ -212,23 +230,22 @@ AI INSIGHTS
                 mime="text/plain"
             )
 
-    # ── AI Chatbot ──────────────────────────────────────────
+    # AI Chatbot
     st.markdown("---")
     st.subheader("💬 Chat With Your Financial Data")
     st.write("Ask anything about your spending — I'll answer based on your uploaded data.")
 
-    # Build data context for chatbot
-    summary = "\n".join([f"{cat}: RM {amt:.2f}" for cat, amt in category_totals.items()])
+    summary = "\n".join([f"{cat}: {currency_symbol} {amt:.2f}" for cat, amt in category_totals.items()])
     period = selected_month if selected_month != "All Months" else "All Months"
     transactions_str = df_filtered.to_string(index=False)
 
-    system_prompt = f"""You are a helpful personal finance assistant. The user has uploaded their bank statement. 
+    system_prompt = f"""You are a helpful personal finance assistant. The user has uploaded their bank statement.
 Here is their financial data for {period}:
 
 SUMMARY:
-Total Income: RM {income_total:.2f}
-Total Spent: RM {total_spent:.2f}
-Savings: RM {savings:.2f} ({savings_rate:.1f}% savings rate)
+Total Income: {currency_symbol} {income_total:.2f}
+Total Spent: {currency_symbol} {total_spent:.2f}
+Savings: {currency_symbol} {savings:.2f} ({savings_rate:.1f}% savings rate)
 
 SPENDING BY CATEGORY:
 {summary}
@@ -236,18 +253,15 @@ SPENDING BY CATEGORY:
 FULL TRANSACTION LIST:
 {transactions_str}
 
-Answer the user's questions based on this data. Be specific with amounts in RM. Be friendly and concise."""
+Answer the user's questions based on this data. Be specific with amounts in {currency_symbol}. Be friendly and concise."""
 
-    # Initialize chat history
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = []
 
-    # Display chat history
     for msg in st.session_state.chat_history:
         with st.chat_message(msg["role"]):
             st.write(msg["content"])
 
-    # Chat input
     user_input = st.chat_input("Ask about your spending e.g. 'How much did I spend on food?' or 'Which category is highest?'")
 
     if user_input:
