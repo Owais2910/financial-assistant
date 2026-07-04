@@ -2,3 +2,4 @@ pandas
 matplotlib
 anthropic
 streamlit
+plotly
