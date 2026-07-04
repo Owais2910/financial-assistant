@@ -19,7 +19,8 @@ with st.sidebar:
     st.write("2. Select a specific month or view all months")
     st.write("3. Explore your spending charts")
     st.write("4. Click **Generate AI Insights** for personalized recommendations")
-    st.write("5. Download your insights as a text file")
+    st.write("5. Chat with the AI about your spending")
+    st.write("6. Download your insights as a text file")
     st.markdown("---")
     st.markdown("Built by **Owais Saad Siddiqui**")
     st.markdown("[GitHub](https://github.com/Owais2910/financial-assistant)")
@@ -98,11 +99,13 @@ if df is not None:
     selected_month = st.selectbox("Select Month", months)
 
     if selected_month != "All Months":
-        df = df[df["Date"].dt.strftime("%B %Y") == selected_month]
+        df_filtered = df[df["Date"].dt.strftime("%B %Y") == selected_month].copy()
+    else:
+        df_filtered = df.copy()
 
-    expenses = df[df["Amount"] < 0].copy()
+    expenses = df_filtered[df_filtered["Amount"] < 0].copy()
     expenses["Amount"] = expenses["Amount"].abs()
-    income_total = df[df["Amount"] > 0]["Amount"].sum()
+    income_total = df_filtered[df_filtered["Amount"] > 0]["Amount"].sum()
     total_spent = expenses["Amount"].sum()
     savings = income_total - total_spent
     savings_rate = (savings / income_total * 100) if income_total > 0 else 0
@@ -160,7 +163,7 @@ if df is not None:
     # Transaction data
     if upload_type == "CSV":
         st.subheader("Transaction Data")
-        st.dataframe(df, use_container_width=True)
+        st.dataframe(df_filtered, use_container_width=True)
 
     # AI Insights
     if st.button("🤖 Generate AI Insights"):
@@ -208,6 +211,62 @@ AI INSIGHTS
                 file_name=f"finance_insights_{period.replace(' ', '_')}.txt",
                 mime="text/plain"
             )
+
+    # ── AI Chatbot ──────────────────────────────────────────
+    st.markdown("---")
+    st.subheader("💬 Chat With Your Financial Data")
+    st.write("Ask anything about your spending — I'll answer based on your uploaded data.")
+
+    # Build data context for chatbot
+    summary = "\n".join([f"{cat}: RM {amt:.2f}" for cat, amt in category_totals.items()])
+    period = selected_month if selected_month != "All Months" else "All Months"
+    transactions_str = df_filtered.to_string(index=False)
+
+    system_prompt = f"""You are a helpful personal finance assistant. The user has uploaded their bank statement. 
+Here is their financial data for {period}:
+
+SUMMARY:
+Total Income: RM {income_total:.2f}
+Total Spent: RM {total_spent:.2f}
+Savings: RM {savings:.2f} ({savings_rate:.1f}% savings rate)
+
+SPENDING BY CATEGORY:
+{summary}
+
+FULL TRANSACTION LIST:
+{transactions_str}
+
+Answer the user's questions based on this data. Be specific with amounts in RM. Be friendly and concise."""
+
+    # Initialize chat history
+    if "chat_history" not in st.session_state:
+        st.session_state.chat_history = []
+
+    # Display chat history
+    for msg in st.session_state.chat_history:
+        with st.chat_message(msg["role"]):
+            st.write(msg["content"])
+
+    # Chat input
+    user_input = st.chat_input("Ask about your spending e.g. 'How much did I spend on food?' or 'Which category is highest?'")
+
+    if user_input:
+        st.session_state.chat_history.append({"role": "user", "content": user_input})
+        with st.chat_message("user"):
+            st.write(user_input)
+
+        with st.chat_message("assistant"):
+            with st.spinner("Thinking..."):
+                messages_for_api = [{"role": m["role"], "content": m["content"]} for m in st.session_state.chat_history]
+                response = client.messages.create(
+                    model="claude-haiku-4-5-20251001",
+                    max_tokens=1024,
+                    system=system_prompt,
+                    messages=messages_for_api
+                )
+                reply = response.content[0].text
+                st.write(reply)
+                st.session_state.chat_history.append({"role": "assistant", "content": reply})
 
 # Footer
 st.markdown("---")
