@@ -112,7 +112,7 @@ Date,Description,Category,Amount
 
 if df is not None:
     # Month filter
-    months = ["All Months"] + sorted(df["Date"].dt.strftime("%B %Y").unique().tolist())
+    months = ["All Months"] + sorted(df["Date"].dt.strftime("%B %Y").unique().tolist(), key=lambda x: pd.to_datetime(x, format="%B %Y"))
     selected_month = st.selectbox("Select Month", months)
 
     if selected_month != "All Months":
